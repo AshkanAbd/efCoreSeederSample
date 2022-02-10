@@ -1,20 +1,23 @@
-# Database Seeder Pull Request for EFCore:
-A new seeder for EFCore to easily seeding database.     
-Please check `Seed` directory, Seeds are defined in it.
-Also Seeder source placed in `Seeder` directory.
+# EF.Seeder sample
+
+### Seeder for EFCore and other ORMs.
+
+A new seeder mainly for EFCore and also for other ORMs to easily seeding database.     
+This repo contains a sample for usage for [Ef.Seeder](https://www.nuget.org/packages/Ef.Seeder)
 
 ## Previous EFCore seeder:
-EFCore has a seeder that can be found in [this link](https://docs.microsoft.com/en-us/ef/core/modeling/data-seeding).
-You have to write your seeds in ModelBuilder and seeds will be a part of your migrations what is not an interesting way for seeding the database.
-Also that seeds won't increase the primary key and indexes of your tables so you have to increase them manually!!!
 
-## New Seeder that implemented in this PR:
+EFCore has a seeder that can be found in [this link](https://docs.microsoft.com/en-us/ef/core/modeling/data-seeding). You have to write your seeds in ModelBuilder and seeds will be a part of your migrations what is not an interesting way for seeding
+the database. Also that seeds won't increase the primary key and indexes of your tables so you have to increase them manually!!!
+
+## New Seeder that implemented in this package:
+
 After my experience while using EFCore seeder, I decided to write a new implementation for EFCore seeder.
-You can find my seeder in `Seeder` directory of EFCore source code.
-Also a sample project this implementation is available in [this repo](https://github.com/AshkanAbd/efCoreSeederSample)
 
 #### New seeder approach:
+
 ##### Define your seeders:
+
 ```c#
 using System.Linq;
 using efCoreSeederSample.Models;
@@ -32,7 +35,7 @@ namespace efCoreSeederSample.Seed
             DbContext = dbContext;
         }
 
-        [Seeder(typeof(Category), 1)]
+        [Seeder(1, typeof(Category)/* this parameter is optional*/)]
         public void CategorySeeder()
         {
             for (var i = 1; i <= 3; i++) {
@@ -46,29 +49,64 @@ namespace efCoreSeederSample.Seed
     }
 }
 ```
+
 As you can see, In this new approach we can easily define a seeder method. Also there is a priority in `SeederAttribute` that determines order of seeder methods, this can helps you to seed your database as you defined your relations.
+
 ##### Run your seeders:
+
+1) If you want to seed EFCore:
+
 ```c#
-services.AddSeeder<SeederSampleDbContext>()
-                .SetEnvironment(Configuration["Seeders:Environment"])
-                .EnsureSeeded(bool.Parse(Configuration["Seeders:isEfProcess"]));
+new DatabaseSeeder(ServiceProvider, YourDbContext)
+        .IsProductionEnvironment(true) // For seed that are needed only in development.
+        .EnsureSeeded(isNotEfProcess); // For ef-tool processes
 ```
 
-You should add this line of code to `ConfigureServices` method of `Startup` after registering you application `DbContext`.
-After adding this line, in start of every run, seeder starts to seed your database.
+2) If you want to seed Other ORMs or don't want to pass DbContext:
+
+```c#
+new DatabaseSeeder(ServiceProvider)
+        .IsProductionEnvironment(true) // For seed that are needed only in development.
+        .EnsureSeeded(isNotEfProcess); // For ef-tool processes
+```
+
+You can put above lines in any part of your application, but note that you need to a not disposed `ServiceProvider`.   
+In this sample, I put it in `Main` method of `Program` class.    
+Also you can create a new `Command` using [AppCommand package](https://www.nuget.org/packages/AppCommand)
+to seed you database without source code. Also with [AppCommand package](https://www.nuget.org/packages/AppCommand), you can easily access `ServiceProvider`
 
 ### `SeederAttribute` Parameters:
-#### `Type`:
-This is type of the model you want seed.
-The model should has a `DBSet<>` in your `DbContext`.
+
 #### `Priority`:
-The priority of the seeder.
-Assume that because of relations you defined in your database, you can't insert data to table `A` before table `B`. Now for seeding your database you can set `Priority` of `BSeeder` to `1` and `Priority` of `ASeeder` to `2`. Now seeder will run `BSeeder` before `ASeeder` and you have seed in your both tables.
-##### `Production`:
+
+The priority of the seeder. Assume that because of relations you defined in your database, you can't insert data to table `A` before table `B`. Now for seeding your database you can set `Priority` of `BSeeder` to `1` and `Priority` of `ASeeder`
+to `2`. Now seeder will run `BSeeder` before `ASeeder` and you have seed in your both tables.
+
+#### `Type` (Optional):
+
+This is type of the entity you want seed. The model should has a `DBSet<>` in your `DbContext`.
+
+##### Note: For other ORMs or other purposes, this parameter is optional and can be null.
+
+##### `Production` (Optional):
+
 When this parameter is `true` means this seeder should only run on your production for seeding your database in production environment. And if the parameter is `false`, the seeder will only run on development environment.
-#### `Force`:
+
+#### `Force` (Optional):
+
 Seeder automatically checks your database's tables. If the model's table has some data in it, seeder won't run to prevent duplicating data. But with setting `Force` Parameter to `true`, you can force seeder to insert data again.
 
+##### Note 1: This parameter is only useful for EFCore orm.
+
+##### Note 2: This parameter only works when you pass `DbContext` object to seeder and `Type` is not null.
+
 ## Purpose:
-I think this implementation is good start point for a new seeder in EFCore and it's better than previous seeder of EFCore.
-I hope you like it.
+
+I think this implementation is good start point for a new seeder in EFCore and it's better than previous seeder of EFCore. I hope you like it.
+
+### Donation:
+
+If you like it, you can support me with `USDT`:
+
+1) `TJ57yPBVwwK8rjWDxogkGJH1nF3TGPVq98` for `USDT TRC20`
+2) `0x743379201B80dA1CB680aC08F54b058Ac01346F1` for `USDT ERC20`

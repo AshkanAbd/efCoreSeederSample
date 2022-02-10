@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using efCoreSeederSample.Models;
-using efCoreSeederSample.Seeder.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +24,9 @@ namespace efCoreSeederSample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<SeederSampleDbContext>(options =>
-            {
+            services.AddDbContext<SeederSampleDbContext>(options => {
                 options.UseNpgsql(Configuration["ConnectionStrings:DefaultConnection"]);
             });
-
-            services.AddSeeder<SeederSampleDbContext>()
-                .SetEnvironment(Configuration["Seeders:Environment"])
-                .EnsureSeeded(bool.Parse(Configuration["Seeders:isEfProcess"]));
 
             ConfigControllerService(services);
 
@@ -41,8 +35,7 @@ namespace efCoreSeederSample
             services.AddCors();
             services.AddMvc();
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
+            services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "efCoreSeederSample", Version = "v1"});
             });
         }
@@ -78,8 +71,7 @@ namespace efCoreSeederSample
         private void ConfigControllerService(IServiceCollection services)
         {
             services.AddControllers(options => { options.RespectBrowserAcceptHeader = true; })
-                .ConfigureApiBehaviorOptions(options =>
-                {
+                .ConfigureApiBehaviorOptions(options => {
                     options.SuppressConsumesConstraintForFormFileParameters = true;
                 });
 
@@ -91,8 +83,7 @@ namespace efCoreSeederSample
 
         private void ConfigSwaggerService(IServiceCollection services)
         {
-            services.AddSwaggerGen(options =>
-            {
+            services.AddSwaggerGen(options => {
                 options.SwaggerDoc("V1", new OpenApiInfo {Title = "SeederSample", Version = "V1"});
                 options.AddSecurityDefinition("Token", new OpenApiSecurityScheme {
                     Name = "Authorization",

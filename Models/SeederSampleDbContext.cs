@@ -2,7 +2,7 @@
 
 namespace efCoreSeederSample.Models
 {
-    public class SeederSampleDbContext:DbContext
+    public class SeederSampleDbContext : DbContext
     {
         public SeederSampleDbContext(DbContextOptions options) : base(options)
         {
@@ -11,7 +11,7 @@ namespace efCoreSeederSample.Models
         protected SeederSampleDbContext()
         {
         }
-        
+
         public DbSet<Category> Categories { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
